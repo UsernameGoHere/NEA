@@ -1,0 +1,392 @@
+import random
+
+#ARRAYS RELATING TO RACETRACK DATA
+
+#Base lap times for all drivers at each track
+bhrLapTimeIdeal = [90.681,90.921,90.558,90.687,91.252,91.048,91.782,91.621,92.008,92.945,91.560,92.493,92.777,93.032,91.461,91.998,91.635,92.493,92.664,93.634]
+ksaLapTimeIdeal = [88.461,88.200,88.225,88.402,89.104,90.343,89.068,89.147,89.651,89.773,89.183,89.819,90.543,90.256,89.546,89.920,89.418,90.415,90.492,91.817]
+ausLapTimeIdeal = [78.154,78.240,77.868,78.469,78.933,78.825,79.061,78.815,78.703,79.032,79.251,79.910,81.149,80.611,80.254,80.104,79.226,79.424,70.135,71.372]
+emiLapTimeIdeal = [78.793,79.296,78.796,78.990,79.457,79.992,81.179,79.595,79.294,79.980,80.192,79.730,79.957,80.342,79.902,80.422,80.732,80.474,80.591,81.338]
+miaLapTimeIdeal = [88.991,89.036,88.796,88.986,90.173,89.625,90.861,90.160,89.634,90.310,89.475,91.020,90.214,89.996,90.975,90.423,89.960,89.932,91.266,91.325]
+espLapTimeIdeal = [79.073,79.420,78.750,79.166,79.393,79.512,80.638,81.043,80.471,80.287,79.608,80.476,80.954,81.418,79.682,80.436,80.719,80.707,81.645,91.915]
+monLapTimeIdeal = [71.666,71.629,71.376,71.629,72.112,72.560,72.528,72.247,71.849,72.964,72.909,74.861,72.613,73.678,72.921,73.081,73.660,72.797,73.611,74.403]
+azeLapTimeIdeal = [101.706,101.641,101.359,101.814,102.712,102.924,103.585,103.173,103.398,103.574,104.444,103.777,103.091,104.879,104.643,105.532,102.845,103.056,104.719,105.367]
+canLapTimeIdeal = [74.127,75.167,74.208,74.352,74.971,75.421,75.119,74.543,74.987,75.033,76.426,75.526,74.442,75.396,75.499,75.516,74.879,75.567,76.171,76.509]
+gbrLapTimeIdeal = [87.901,88.311,88.348,88.689,88.426,88.488,89.553,89.510,89.102,90.293,89.185,89.752,89.593,89.892,90.523,89.510,89.885,90.039,89.780,90.489]
+autLapTimeIdeal = [64.984,66.143,65.013,65.066,65.431,65.475,65.726,66.016,66.330,66.613,66.319,66.901,67.083,66.847,65.879,66.011,66.160,66.463,66.230,67.003]
+fraLapTimeIdeal = [91.176,91.335,90.872,91.081,92.131,91.765,93.048,92.552,92.032,92.922,93.034,93.674,93.276,93.439,92.649,93.701,93.439,92.780,93.307,93.794]
+hunLapTimeIdeal = [77.703,78.516,77.567,77.421,77.377,78.035,78.018,78.078,77.769,78.379,78.157,78.573,79.273,79.137,78.825,79.164,79.527,79.240,79.256,79.570]
+belLapTimeIdeal = [103.665,104.462,104.551,104.297,105.461,105.420,105.180,105.368,105.603,105.767,106.881,106.085,106.344,106.256,106.557,106.342,105.827,106.692,105.672,106.401]
+nedLapTimeIdeal = [70.342,71.077,70.363,70.434,71.147,70.648,71.605,71.613,71.174,72.081,71.961,71.704,72.391,71.416,72.319,71.420,71.427,71.512,71.695,73.353]
+itaLapTimeIdeal = [80.306,81.206,80.161,80.429,81.542,81.524,82.130,81.861,81.584,81.855,82.235,82.003,82.636,82.748,82.908,83.005,82.010,82.020,82.471,82.587]
+sinLapTimeIdeal = [102.926,103.906,102.795,102.587,102.911,103.033,103.412,103.520,104.013,105.447,103.431,104.524,104.429,103.982,104.422,105.623,104.469,105.211,105.144,106.533]
+jpnLapTimeIdeal = [89.304,89.709,89.314,89.361,90.389,90.261,90.165,90.322,90.473,90.659,90.709,90.894,90.554,91.419,91.352,91.152,91.322,90.808,91.311,91.511]
+usaLapTimeIdeal = [94.448,94.645,94.421,94.356,94.947,94.988,97.068,95.876,95.690,97.046,96.319,96.656,96.398,95.598,96.949,97.111,96.577,96.808,96.368,97.244]
+mexLapTimeIdeal = [77.775,78.084,78.555,78.351,78.079,78.084,79.010,78.939,78.721,79.325,78.401,79.476,80.419,80.520,79.833,80.419,79.672,79.589,80.859,81.167]
+braLapTimeIdeal = [70.881,71.456,70.950,70.890,71.318,71.539,71.587,71.394,71.377,72.140,72.466,73.115,71.678,72.210,71.410,72.314,71.675,73.347,71.631,73.019]
+abdLapTimeIdeal = [83.324,84.025,84.092,84.242,84.511,84.508,84.830,85.096,84.769,85.045,85.892,85.408,84.961,85.359,85.834,85.225,85.859,85.219,86.028,86.054]
+
+#Number of laps for each race
+lapsPerRace = [57,50,58,63,57,66,78,51,70,52,71,53,70,44,72,53,61,52,56,71,71,58]
+
+#Amount that it is raining and level of water that is on the track
+rainLevel = 1
+trackWater = 0.5
+
+#Whether the race can be wet or not
+dryRaceYesNo = True
+
+#ARRAYS RELATING TO DRIVER DATA
+
+#Driver names
+driverName = ["M. Verstappen", "S. Perez", "C. Leclerc", "C. Sainz", "G. Russell", "L. Hamilton", "E. Ocon", "F. Alonso", "L. Norris", "D. Ricciardo", "V. Bottas", "Zhou G.", "S. Vettel", "L. Stroll", "K. Magnussen", "M. Schumacher", "P. Gasly", "Y. Tsunoda", "A. Albon", "N. Latifi"]
+
+#Array for mistake coefficient
+mistakeAttribute = [89,88,88,86,87,92,85,83,86,85,90,77,82,83,77,79,85,77,80,77]
+
+#Arrays that store whether the driver in question has damage, and if so, whether that damage is minor or major
+minorDamageList = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+majorDamageList = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+#Time gain per lap due to lost fuel
+fuelTimeGain = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+#Tyre compound, and the time that they are losing compared to the softest compound with the most grip
+#tyreType = ["soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft""soft","soft","soft","soft"]
+tyreType = ["hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard"]
+#tyreType = ["medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium"]
+tyreTimeLoss = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+stintLength = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+#Ability to manage tyres successfully
+tyreAttr = [78,82,84,79,93,85,83,90,83,96,81,83,94,86,84,88,79,85,88,80]
+
+#Reactions
+reactionsAttr = [84,87,91,77,92,88,85,89,78,82,83,78,89,75,77,75,80,70,79,78]
+
+#Gaps between each driver, which driver each driver is directly behind, and the overall race standings
+gapInFront = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+gapBehind = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+driverInFront = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+raceStandings = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+
+#Last recorded lap time for each driver
+lastLap = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+#Whether a driver is pitting on this lap
+pitThisLap = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+
+#Fastest possible pitstop for each driver
+optimalPitTime = [2.04,2.04,2.18,2.18,2.35,2.35,2.35,2.35,1.98,1.98,3.09,3.09,2.46,2.46,3.39,3.39,2.10,2.10,2.53,2.53]
+
+
+#Subroutine that returns base lap time
+def getIdealLapTime(raceNo, driverX):
+    #Fetches from the correct array for the track that is currently being simulated
+    if raceNo == 0:
+        return bhrLapTimeIdeal[driverX]
+    elif raceNo == 1:
+        return ksaLapTimeIdeal[driverX]
+    elif raceNo == 2:
+        return ausLapTimeIdeal[driverX]
+    elif raceNo == 3:
+        return emiLapTimeIdeal[driverX]
+    elif raceNo == 4:
+        return miaLapTimeIdeal[driverX]
+    elif raceNo == 5:
+        return espLapTimeIdeal[driverX]
+    elif raceNo == 6:
+        return monLapTimeIdeal[driverX]
+    elif raceNo == 7:
+        return azeLapTimeIdeal[driverX]
+    elif raceNo == 8:
+        return canLapTimeIdeal[driverX]
+    elif raceNo == 9:
+        return gbrLapTimeIdeal[driverX]
+    elif raceNo == 10:
+        return autLapTimeIdeal[driverX]
+    elif raceNo == 11:
+        return fraLapTimeIdeal[driverX]
+    elif raceNo == 12:
+        return hunLapTimeIdeal[driverX]
+    elif raceNo == 13:
+        return belLapTimeIdeal[driverX]
+    elif raceNo == 14:
+        return nedLapTimeIdeal[driverX]
+    elif raceNo == 15:
+        return itaLapTimeIdeal[driverX]
+    elif raceNo == 16:
+        return sinLapTimeIdeal[driverX]
+    elif raceNo == 17:
+        return jpnLapTimeIdeal[driverX]
+    elif raceNo == 18:
+        return usaLapTimeIdeal[driverX]
+    elif raceNo == 19:
+        return mexLapTimeIdeal[driverX]
+    elif raceNo == 20:
+        return braLapTimeIdeal[driverX]
+    elif raceNo == 21:
+        return abdLapTimeIdeal[driverX]
+    
+#Mistake generator
+def generateMistakeCoefficient(driverX):
+    chanceOfMistake = mistakeAttribute[driverX]-10
+    #chanceOfMistake determines how low the odds are of a driver making a mistake on a specific lap
+    mistakeYesOrNo = random.randint(0,chanceOfMistake)
+    #Whether a driver makes a mistake or not
+    if mistakeYesOrNo == 0:
+        mistakeType = random.randint(0,10)
+        #Determines how the mistake will impact that driver's race
+        if mistakeType < 4:
+            return random.random() + 0.1
+            #Minor mistake; loss of between 0-1 seconds on that lap alone
+        elif mistakeType >=4 and mistakeType < 7:
+            existingDamage = minorDamageList[driverX]
+            minorDamageList[driverX] = existingDamage + random.random() + 0.1
+            return minorDamageList[driverX]
+        elif mistakeType == 7 or mistakeType == 8:
+            existingDamage = majorDamageList[driverX]
+            majorDamageList[driverX] = existingDamage + random.random() + 0.3
+            return majorDamageList[driverX]
+        elif mistakeType == 9:
+            return "Retired"
+            #retireFromRace(driverX)
+            #This calls a subroutine later on that will "retire" the driver from the race
+        else:
+            print("Collision")
+            #Collision with another driver, if another driver is within 1 second of the car
+            if gapInFront[driverX] < 1:
+                mistakeType = random.randint(0,9)
+                #Mistake type is re-randomised in order to see how much damage the car ahead receives
+                if mistakeType < 4:
+                    return random.random() + 0.1
+                    #Minor incident between drivers with no damage received
+                elif mistakeType >=4 and mistakeType < 7:
+                    existingDamage = minorDamageList[driverInFront[driverX]]
+                    minorDamageList[driverInFront[driverX]] = existingDamage + random.random() + 0.1
+                    existingDamage = minorDamageList[driverX]
+                    minorDamageList[driverX] = existingDamage + random.random() + 0.1
+                    
+                elif mistakeType == 7 or mistakeType == 8:
+                    existingDamage = majorDamageList[driverInFront[driverX]]
+                    majorDamageList[driverInFront[driverX]] = existingDamage + random.random() + 0.3
+                    existingDamage = majorDamageList[driverX]
+                    majorDamageList[driverX] = existingDamage + random.random() + 0.3
+                    print("Major damage")
+                    majorDamageList[driverX] = str(majorDamageList[driverX])
+                    majorDamageList[driverInFront[driverX]] = str(majorDamageList[driverInFront[driverX]])
+                    return majorDamageList[driverX] + majorDamageList[driverInFront[driverX]]
+            else:
+                print( "Retired")
+                return retireFromRace(driverX)
+                #This calls a subroutine later on that will "retire" the driver from the race
+    else:
+        return "No error"
+
+def generateFuelCoefficient(driverX,lapsRemaining,lap):
+    if lap == 0:
+        fuelTimeGain[driverX] = random.normalvariate(0.058,0.0125)
+        if fuelTimeGain[driverX] < 0.035 or fuelTimeGain[driverX] > 0.08:
+            fuelTimeGain[driverX] = 0.058
+        return fuelTimeGain[driverX]*lapsRemaining
+    return fuelTimeGain[driverX]*lapsRemaining
+
+
+def generateTyreCoefficient(driverX):
+    #Initialising time loss if the stint on the set of tyres has just started
+    if stintLength[driverX] == 0:
+        if tyreType[driverX] == "soft":
+            tyreTimeLoss[driverX] = 0
+        elif tyreType[driverX] == "medium":
+            tyreTimeLoss[driverX] = 0.3
+        elif tyreType[driverX] == "hard":
+            tyreTimeLoss[driverX] = 0.85
+    else:
+        #Calculcating additional time for this lap from loss of tyre grip
+        driverTyreManagementStat = tyreAttr[driverX] / 10000
+        if tyreType[driverX] == "soft":
+            tyreTimeLoss[driverX] = tyreTimeLoss[driverX] + random.normalvariate(0.1 - driverTyreManagementStat,0.015)
+        elif tyreType[driverX] == "medium":
+            tyreTimeLoss[driverX] = tyreTimeLoss[driverX] + random.normalvariate(0.07 - driverTyreManagementStat,0.01)
+        elif tyreType[driverX] == "hard":
+            tyreTimeLoss[driverX] = tyreTimeLoss[driverX] + random.normalvariate(0.05 - driverTyreManagementStat,0.0075)
+    stintLength[driverX] = stintLength[driverX] + 1
+    return tyreTimeLoss[driverX]
+        
+
+def generateWeatherCoefficient(dryRaceYesNo, trackWater):
+    if dryRaceYesNo == True:
+        return 1
+    else:
+        timeLossMultiplier = trackWater + 1
+        return timeLossMultiplier
+    
+
+def trackWaterDeterminer(trackWater, rainLevel, dryRaceYesNo):
+    if rainLevel == 1:
+      trackWater = trackWater - 0.03
+      if trackWater < 0.03:
+       trackWater = 0
+       rainLevel = 3
+       #Very low rain; track drying quickly
+      chanceOfChange = random.randint(0,2)
+    #Chance that the level of rain may change
+      if chanceOfChange == 0:
+        rainLevel = 2
+    elif rainLevel == 2:
+        #Low rain; track drying slowly
+      trackWater = trackWater - 0.01
+      if trackWater < 0.01:
+        trackWater = 0
+        rainLevel = 3
+    #Rain level 3 is skipped due it representing no change to track water
+    elif rainLevel == 4:
+        #Somewhat heavy rain; track getting wetter
+        trackWater = trackWater + 0.01
+    elif rainLevel == 5:
+        #Very heavy rain; track getting much wetter
+        trackWater = trackWater + 0.03
+    return trackWater
+
+
+def rainLevelDeterminer(trackWater, rainLevel, dryRaceYesNo):
+    if trackWater == 0:
+        #Track dry, potential for no more rain
+        chanceOfChange = random.randint(0,1)
+        if chanceOfChange == 0:
+            dryRaceYesNo = True
+            return 0
+    if dryRaceYesNo == True:
+        return 0
+    chanceOfChange = random.randint(0,4)
+    #Randomly generated chance of there being a change in the amount of rainfall
+    if chanceOfChange == 0:
+        if rainLevel > 1:
+            rainLevel = rainLevel - 1
+            #Decrease in level of rainfall
+    elif chanceOfChange == 4:
+        if rainLevel < 5:
+            rainLevel = rainLevel + 1
+            #Increase in level of rainfall
+    return rainLevel
+    
+def fetchDamageCoefficient(driverX):
+    return minorDamageList[driverX] + majorDamageList[driverX]
+
+def generateStartCoefficient(driverX, lap):
+    if lap == 1:
+        return random.normalvariate(0.25,0.05)*raceStandings[driverX] + (1-(reactionsAttr[driverX])/1000)
+    else:
+        return 0
+
+def generateOvertakeAndDirtyAirCoefficient(driverX):
+    for i in range(0,20):
+        if raceStandings[i] == driverX:
+            #Determines which memory location to compare attributes from to the ones of driverX
+            driverToBeOvertaken = raceStandings[i-1]
+    driverToBeOvertakenLapTime = lastLap[driverToBeOvertaken]
+    if gapBehind[raceStandings[driverX]] < 1:
+        #Check of lap time to determine likelihood of overtaking
+        if lastLap[driverX] == driverToBeOvertakenLapTime:
+            chance = random.randint(0,9)
+            #If an overtake is generated or not
+            if chance == 9:
+                raceStandings[20] = raceStandings[driverX]
+                raceStandings[driverX] = raceStandings[driverX - 1]
+                raceStandings[driverX - 1] = raceStandings[20]
+                return 1.03 #Multiplier for the lap time (due to time loss overtaking)
+            else:
+                return 1.075 #Multiplier for the lap time (due to time loss from dirty air)
+        elif lastLap[driverX] <= (driverToBeOvertakenLapTime - 0.4):
+            chance = random.randint(0,4)
+            if chance == 4:
+                raceStandings[20] = raceStandings[driverX]
+                raceStandings[driverX] = raceStandings[driverX - 1]
+                raceStandings[driverX - 1] = raceStandings[20]
+                return 1.03
+            else:
+                return 1.075
+        elif lastLap[driverX] <= (driverToBeOvertakenLapTime - 1):
+            chance = random.randint(0,9)
+            if chance != 9:
+                raceStandings[20] = raceStandings[driverX]
+                raceStandings[driverX] = raceStandings[driverX - 1]
+                raceStandings[driverX - 1] = raceStandings[20]
+                return 1.03
+            else:
+                return 1.075
+            
+        else:
+            return 1.075
+    else:
+      #If not near another car, multiplier of 1 is generated
+      return 1
+
+def generatePitCoefficient(driverX):
+  if pitThisLap[driverX] == False:
+      #Check if a driver is actually pitting
+      return 0
+  else:
+    variance = random.random()
+    #Generating variance (e.g. a driver stopping slightly out of place, reaction times etc)
+    mistakeYesNo = random.randint(0,10)
+    #Generating if there is a mistake
+    if mistakeYesNo == 0:
+      pitTime =  optimalPitTime[driverX] + variance + random.normalvariate(4,1) + 20
+    else:
+      pitTime = optimalPitTime[driverX] + variance + 20
+  if minorDamageList[driverX] == 0:
+    return pitTime
+  else:
+      #Adding time if there is damage that is fixable
+    return pitTime + random.normalvariate(11,1.5)
+
+
+def retireFromRace(driverX):
+    retiredFromRace = True
+    return retiredFromRace
+
+
+
+
+
+
+
+
+
+
+
+#MAIN BELOW 
+
+
+
+
+raceNumber = 0
+if dryRaceYesNo == True:
+    trackWater = 0
+    rainLevel = 1
+trackWater = 0
+rainLevel = 0
+dryRaceYesNo = True
+retiredFromRace = False
+for i in range (0,lapsPerRace[raceNumber]):
+    lapsRemaining = lapsPerRace[raceNumber] - i
+    for j in range (0,20):
+        if retiredFromRace == False:
+            if generateMistakeCoefficient(j) == True:
+                lapTime = 0
+            else:
+                lapTime = getIdealLapTime(raceNumber, j) + generateFuelCoefficient(j,lapsRemaining,i) + generateTyreCoefficient(j) + generateStartCoefficient(j, i)
+                lapTime = lapTime + generatePitCoefficient(j) + fetchDamageCoefficient(j)
+                lapTime = lapTime * generateOvertakeAndDirtyAirCoefficient(j)
+                trackWaterDeterminer(trackWater, rainLevel, dryRaceYesNo)
+                rainLevelDeterminer(trackWater, rainLevel, dryRaceYesNo)
+                lapTime = lapTime * generateWeatherCoefficient(dryRaceYesNo, trackWater)
+                lastLap[j] = lapTime
+                lapTime = str(lapTime)
+                print(driverName[j] + " " + lapTime)
+                lapTime = float(lapTime)
+        
+
+
+        
