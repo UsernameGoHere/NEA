@@ -342,13 +342,144 @@ def generatePitCoefficient(driverX):
     return pitTime + random.normalvariate(11,1.5)
 
 
-def retireFromRace(driverX):
-    retiredFromRace = True
-    return retiredFromRace
+
+#ITERATION 2
+
+def retireFromRace(driverX, safetyCar, virtualSafetyCar):
+    retirementArray[driverX] = True
+    safetyCarYesNo(safetyCar, virtualSafetyCar)
+    return retirementArray[driverX]
 
 
 
+def toPitOrNotToPit(driverX, raceNumber, lapsRemaining):
+    if lapsRemaining < 0.1*lapsPerRace[raceNumber] and (safetyCar == False or virtualSafetyCar == False):
+        return False
+        #Preventing drivers from unnecessarily pitting if it is late in the race
+    elif minorDamageList[driverX] > 0.25:
+        return True
+        #Making drivers with significant fixable damage pit
+    elif stintLength[driverX] < 5:
+        return False
+    #Preventing drivers pitting unnecessarily when they have recently pitted
+    elif tyreType[driverX] == "soft":
+        #Different likelihoods of pitting depending on stint length
+        if stintLength[driverX] > 0.15*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.3:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.2*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.5:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.25*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.7:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.35*lapsPerRace[raceNumber]:
+             pitThisLap[driverX] = True
+             #Automatically pitting after a certain point due to high tyre wear
+        else:
+            pitThisLap[driverX] = False
+            #Returning false in case of no true value being generated
+    elif tyreType[driverX] == "medium":
+        #Different likelihoods of pitting depending on stint length
+        if stintLength[driverX] > 0.35*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.3:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.4*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.5:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.45*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.7:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.5*lapsPerRace[raceNumber]:
+             pitThisLap[driverX] = True
+             #Automatically pitting after a certain point due to high tyre wear
+        else:
+            pitThisLap[driverX] = False
+    elif tyreType[driverX] == "hard":
+        if stintLength[driverX] > 0.5*lapsPerRace[raceNumber]:
+            #Different likelihoods of pitting depending on stint length
+            if random.normalvariate(0.5,0.2) < 0.3:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.55*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.5:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.6*lapsPerRace[raceNumber]:
+            if random.normalvariate(0.5,0.2) < 0.7:
+                pitThisLap[driverX] = True
+        elif stintLength[driverX] > 0.7*lapsPerRace[raceNumber]:
+             pitThisLap[driverX] = True
+             #Automatically pitting after a certain point due to high tyre wear
+        else:
+            pitThisLap[driverX] = False
+    return pitThisLap[driverX]
+    
 
+def determineNewCompound(lapsRemaining, raceNumber, softHeuristic, medHeuristic, hardHeuristic, driverX):
+    if lapsRemaining < 0.2*lapsPerRace[raceNumber]:
+        return "soft"
+    softLoss = softHeuristic * lapsRemaining
+    medLoss = medHeuristic * lapsRemaining
+    hardLoss = hardHeuristic * lapsRemaining
+    if softLoss < medLoss and softLoss < hardLoss:
+        return "soft"
+    elif softLoss/2 + softLoss/2 < medLoss:
+        return "soft"
+    elif medLoss < hardLoss:
+        return "medium"
+    elif medLoss*2/3 + softLoss*1/3 < hardLoss:
+        return "medium"
+    elif medLoss/2 + medLoss/2 < hardLoss:
+        return "medium"
+    elif tyreType[driverX] == "hard":
+        return "medium"
+    else:
+        return "hard"
+
+
+def mechanicalFailureGenerator(driverX):
+  #Generates whether there will be a mechanical failure or not
+  chance = random.randint(0,24959)
+  if chance < 43:
+    return retireFromRace(driverX)
+
+def safetyCarYesNo(safetyCar, virtualSafetyCar):
+  chance = randint(0,5)
+  if chance == 0:
+    safetyCar = True
+  elif chance == 1 or chance == 2:
+    virtualSafetyCar = True
+
+def distanceCorrection(driverX):
+    for i in range (0,19):
+        if raceStandings[i] == driverX:
+            driverAhead = raceStandings[i-1]
+            driverBehind = raceStandings[i+1]
+    if raceStandings[0] == j:
+        gapInFront[j] = None
+    elif raceStandings[19] == j:
+        gapBehind[j] = None
+    else:
+        gapBehind[driverX] = gapInFront[driverBehind]
+        aheadCorrection = lastLap[driverX] - lastLap[driverAhead]
+        if gapInFront[driverX] == None:
+            gapInFront[driverX] = 0
+        gapInFront[driverX] = gapInFront[driverX] + aheadCorrection
+        if gapInFront[driverX] < 0:
+            gapInFront[driverX] = 0.2
+        elif gapInFront[driverX] > 120:
+            gapInFront[driverX] = 120
+
+def qualifying():
+for i in range(1,2):
+  for driverX in range (0,20):
+      chance = random.randint(0,1)
+      if chance == 0:
+          newTime = getIdealLapTime(raceNumber, j) + random.random()
+      else:
+          newTime = getIdealLapTime(raceNumber, j) - random.random()
+     if lastLap[driverX] > newTime:
+         bestLap[driverX] = newTime
+         lastLap[driverX] = newTime
 
 
 
@@ -361,6 +492,7 @@ def retireFromRace(driverX):
 
 
 
+total = 0
 raceNumber = 0
 if dryRaceYesNo == True:
     trackWater = 0
@@ -368,25 +500,78 @@ if dryRaceYesNo == True:
 trackWater = 0
 rainLevel = 0
 dryRaceYesNo = True
-retiredFromRace = False
+safetyCar = True
+virtualSafetyCar = False
+safetyCarLapCounter = 0
+vscLapCounter = 0
+#Race simulation algorithm
 for i in range (0,lapsPerRace[raceNumber]):
     lapsRemaining = lapsPerRace[raceNumber] - i
     for j in range (0,20):
-        if retiredFromRace == False:
-            if generateMistakeCoefficient(j) == True:
-                lapTime = 0
+        if retirementArray[j] == False:
+            if safetyCar == True:
+                #Safety car lap times
+                lapTime = getIdealLapTime(raceNumber,0) + 40
+                if raceStandings[0] == j:
+                    gapBehind[j] = 0.5
+                elif raceStandings[19] == j:
+                    gapInFront[j] = 0.5
+                else:
+                    gapInFront[j] = 0.5
+                    gapBehind[j] = 0.5
+            elif virtualSafetyCar == True:
+                #VSC lap times
+                lapTime = getIdealLapTime(raceNumber,0)*1.35
+                lastLap[j] = lapTime
             else:
+                #Generates if there is a mechanical failure or not
+                
+                #Calculating the lap time based on all variables
                 lapTime = getIdealLapTime(raceNumber, j) + generateFuelCoefficient(j,lapsRemaining,i) + generateTyreCoefficient(j) + generateStartCoefficient(j, i)
                 lapTime = lapTime + generatePitCoefficient(j) + fetchDamageCoefficient(j)
-                lapTime = lapTime * generateOvertakeAndDirtyAirCoefficient(j)
+                lapTime = lapTime * generateOvertakeAndDirtyAirCoefficient(j,safetyCar,virtualSafetyCar)
+                #Generating any changes to track conditions
                 trackWaterDeterminer(trackWater, rainLevel, dryRaceYesNo)
                 rainLevelDeterminer(trackWater, rainLevel, dryRaceYesNo)
                 lapTime = lapTime * generateWeatherCoefficient(dryRaceYesNo, trackWater)
+                #Storing the last lap the driver set in the lastLap array (needed for overtakeCoefficient)
                 lastLap[j] = lapTime
-                lapTime = str(lapTime)
-                print(driverName[j] + " " + lapTime)
-                lapTime = float(lapTime)
+                distanceCorrection(j)
+            #awooga
+            for k in range (0,20):
+                if raceStandings[k] == j:
+                    driverStanding = k + 1
+            #Outputting the changes in the gaps in front and behind
+            print(str(driverStanding) + ". " + driverName[j] + " " + str(gapInFront[j]) + " " + str(gapBehind[j]))
+            if gapInFront[j] != None:
+                gapInFront[j] = float(gapInFront[j])
+            if gapBehind[j] != None:
+                gapBehind[j] = float(gapBehind[j])
+    if safetyCar == True:
+        safetyCarLapCounter = safetyCarLapCounter + 1
+        if safetyCarLapCounter > 3:
+            #Random chance of early safety car ending
+            chanceOfEnding = random.normalvariate(0.5,0.25)
+            if chanceOfEnding > 0.5:
+                safetyCar = False
+        elif safetyCarLapCounter > 5:
+            #Automatically ending safety car if laps completed is greater than 5
+            safetyCar = False
+    elif virtualSafetyCar == True:
+        vscLapCounter = vscLapCounter + 1
+        if vscLapCounter > 2:
+            #Automatically ending VSC if laps completed is greater than 2
+            virtualSafetyCar = False
+                
+                
+    
+
+                
         
+
+
+        
+
 
 
         
