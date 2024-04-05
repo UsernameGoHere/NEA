@@ -1,4 +1,6 @@
 import random
+import pygame, sys
+import time
 
 #ARRAYS RELATING TO RACETRACK DATA
 
@@ -53,8 +55,8 @@ majorDamageList = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 fuelTimeGain = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 #Tyre compound, and the time that they are losing compared to the softest compound with the most grip
-#tyreType = ["soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft"]
-tyreType = ["hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard"]
+tyreType = ["soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft","soft"]
+#tyreType = ["hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard","hard"]
 #tyreType = ["medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium","medium"]
 tyreTimeLoss = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 stintLength = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -69,7 +71,6 @@ reactionsAttr = [84,87,91,77,92,88,85,89,78,82,83,78,89,75,77,75,80,70,79,78]
 gapInFront = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
 gapBehind = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
 driverInFront = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-#raceStandings = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 raceStandings = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
 #Last recorded lap time for each driver
@@ -97,6 +98,7 @@ orderedQualifying = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 championshipStandings = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 constructorsStandings = [0,0,0,0,0,0,0,0,0,0]
 
+carsLeft = 20
 
 #ITERATION 1: SUBROUTINES STARTS HERE
 
@@ -169,11 +171,9 @@ def generateMistakeCoefficient(driverX):
             majorDamageList[driverX] = existingDamage + random.random() + 0.3
             return majorDamageList[driverX]
         elif mistakeType == 9:
-            print("Retired")
-            return retireFromRace(driverX, safetyCar, virtualSafetyCar)     
+            return retireFromRace(driverX, safetyCar, virtualSafetyCar,carsLeft)     
             #This calls a subroutine later on that will "retire" the driver from the race
         else:
-            print("Collision")
             #Collision with another driver, if another driver is within 1 second of the car
             if gapInFront[driverX] < 1:
                 mistakeType = random.randint(0,9)
@@ -192,13 +192,11 @@ def generateMistakeCoefficient(driverX):
                     majorDamageList[driverInFront[driverX]] = existingDamage + random.random() + 0.3
                     existingDamage = majorDamageList[driverX]
                     majorDamageList[driverX] = existingDamage + random.random() + 0.3
-                    print("Major damage")
                     majorDamageList[driverX] = str(majorDamageList[driverX])
                     majorDamageList[driverInFront[driverX]] = str(majorDamageList[driverInFront[driverX]])
                     return majorDamageList[driverX] + majorDamageList[driverInFront[driverX]]
             else:
-                print("Retired")
-                return retireFromRace(driverX, safetyCar, virtualSafetyCar)
+                return retireFromRace(driverX, safetyCar, virtualSafetyCar, carsLeft)
                 #This calls a subroutine later on that will "retire" the driver from the race
     else:
         return "No error"
@@ -301,9 +299,13 @@ def generateStartCoefficient(driverX, lap):
     if lap == 1:
         for i in range (0,20):
             if i == 19 or i == 20:
-                return random.normalvariate(0.25,0.05)*19 + (1-((reactionsAttr[driverX])/1000))
+                return 3
             elif raceStandings[i] == driverX:
-                return random.normalvariate(0.25,0.05)*raceStandings[driverX] + (1-((reactionsAttr[driverX])/1000))
+                if raceStandings[driverX] == "blank":
+                    retireFromRace(driverX, safetyCar, virtualSafetyCar, carsLeft)
+                else:
+                    return random.normalvariate(0.25,0.05)*float(raceStandings[driverX]) + (1-((reactionsAttr[driverX])/1000))
+            
     else:
         return 0
 
@@ -327,14 +329,14 @@ def generateOvertakeAndDirtyAirCoefficient(driverX, safetyCar, virtualSafetyCar)
                         driverToBeOvertaken = raceStandings[driverX-z]
                         z = z + 1
                     else:
-                        retireFromRace(driverX, safetyCar, virtualSafetyCar)
+                        retireFromRace(driverX, safetyCar, virtualSafetyCar,carsLeft)
                         return 0
                 
                 
             
             allocationCheck = True
     if allocationCheck == False:
-            retireFromRace(driverX, safetyCar, virtualSafetyCar)
+            retireFromRace(driverX, safetyCar, virtualSafetyCar,carsLeft)
             return 0
     
     driverToBeOvertakenLapTime = (lastLap[driverToBeOvertaken])
@@ -352,6 +354,7 @@ def generateOvertakeAndDirtyAirCoefficient(driverX, safetyCar, virtualSafetyCar)
                 raceStandings[driverX] = raceStandings[driverX - 1]
                 raceStandings[driverX - 1] = raceStandings[20]
                 raceStandings[20] = "blank"
+                gapInFront[driverX] = 0.5
                 #Swapping the positions of the two drivers
                 return 1.02 #Multiplier for the lap time (due to time loss overtaking)
         #Check of lap time to determine likelihood of overtaking
@@ -363,6 +366,7 @@ def generateOvertakeAndDirtyAirCoefficient(driverX, safetyCar, virtualSafetyCar)
                 raceStandings[driverX] = raceStandings[driverX - 1]
                 raceStandings[driverX - 1] = raceStandings[20]
                 raceStandings[20] = "blank"
+                gapInFront[driverX] = 0.5
                 #Swapping the positions of the two drivers
                 return 1.02 #Multiplier for the lap time (due to time loss overtaking)
             else:
@@ -374,6 +378,7 @@ def generateOvertakeAndDirtyAirCoefficient(driverX, safetyCar, virtualSafetyCar)
                 raceStandings[driverX] = raceStandings[driverX - 1]
                 raceStandings[driverX - 1] = raceStandings[20]
                 raceStandings[20] = "blank"
+                gapInFront[driverX] = 0.5
                 #Swapping the positions of the two drivers
                 return 1.02
             else:
@@ -417,10 +422,11 @@ def generatePitCoefficient(driverX):
 
 #ITERATION 2
 
-def retireFromRace(driverX, safetyCar, virtualSafetyCar):
+def retireFromRace(driverX, safetyCar, virtualSafetyCar, carsLeft):
     retirementArray[driverX] = True
     gapBehind[driverX] = 100
     gapInFront[driverX] = 100
+    carsLeft = carsLeft - 1
     for i in range (0,20):
         if raceStandings[i] == driverX:
             for j in range (i,20):
@@ -518,8 +524,9 @@ def mechanicalFailureGenerator(driverX):
   #Generates whether there will be a mechanical failure or not
   chance = random.randint(0,24959)
   if chance < 43:
-    return retireFromRace(driverX, safetyCar, virtualSafetyCar)
+    return retireFromRace(driverX, safetyCar, virtualSafetyCar,carsLeft)
 
+#Generatinf whether there will be a safety car or not
 def safetyCarYesNo(safetyCar, virtualSafetyCar):
   chance = random.randint(0,5)
   if chance == 0:
@@ -527,6 +534,7 @@ def safetyCarYesNo(safetyCar, virtualSafetyCar):
   elif chance == 1 or chance == 2:
     virtualSafetyCar = True
 
+#Correcting the distances between drivers
 def distanceCorrection(driverX, safetyCar, virtualSafetyCar):
     driverFound = False
     for i in range (0,19):
@@ -541,7 +549,7 @@ def distanceCorrection(driverX, safetyCar, virtualSafetyCar):
         gapBehind[driverX] = 100
     else:
         if driverFound == False:
-            retireFromRace(driverX, safetyCar, virtualSafetyCar)
+            retireFromRace(driverX, safetyCar, virtualSafetyCar,carsLeft)
         elif driverBehind == "blank":
             gapBehind[driverX] = 100
         elif driverBehind < 0 or driverBehind > 19:
@@ -563,14 +571,13 @@ def qualifying(raceNumber):
             if chance == 0:
                 newTime = getIdealLapTime(raceNumber, driverX) + random.random()
             else:
-                newTime = getIdealLapTime(raceNumber, driverX) - (random.random()/4)
+                newTime = getIdealLapTime(raceNumber, driverX) - (random.random()/8)
         #Storing the new lap time if it is better than the best previously set by a driver
             if bestLap[driverX] > newTime:
                 bestLap[driverX] = newTime
                 lastLap[driverX] = newTime
 
     for j in range(0,20):
-        print(driverName[j] + str(bestLap[j]))
         bestLap[j] = float(bestLap[j])
         orderedQualifying[j] = bestLap[j]
     for x in range (0,19):
@@ -583,8 +590,8 @@ def qualifying(raceNumber):
 
     for z in range (0,20):
         for w in range (0,20):
-            if bestLap[w] == orderedQualifying[z]:
-                raceStandings[z] = w
+            if bestLap[z] == orderedQualifying[w]:
+                raceStandings[w] = z
 
 
 
@@ -627,7 +634,7 @@ def allocatePoints(driverSetFastestLap):
     for i in range(0,9):
         constructorsStandings[i] = championshipStandings[((i+1)*2)-1] + championshipStandings[((i+1)*2)-2]
 
-  
+#
 def setDriver():
     inputted = input("Please input a number between 0 and 19. This determines the driver you will be editing")
     #Checking to see if the user has inputted a valid integer
@@ -768,8 +775,16 @@ def setRainLevel(rainType):
     
 
 
-def race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCar, trackWater, rainLevel, dryRaceYesNo):
+def race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCar, trackWater, rainLevel, dryRaceYesNo, championshipMode):
+    for a in range (0,20):
+        gapBehind[a] = 0.5
+        gapInFront[a] = 0.5
+    
+    lapsPerRace[0] = 57
     for i in range (0,lapsPerRace[raceNumber]):
+        if raceNumber == 0:
+            if i == 50:
+                lapsPerRace[raceNumber] = lapsPerRace[raceNumber] + 7
         #Iteration for every lap in the race
         lapsRemaining = lapsPerRace[raceNumber] - i
         for j in range (0,20):
@@ -810,13 +825,31 @@ def race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCa
                     #Corrects the distances to the car ahead
                     distanceCorrection(j, safetyCar, virtualSafetyCar)
                     #Outputs various important bits and bobs
-                    print(str(driverName[j]) + " " + str(lapTime) + " Gap Behind: " + str(gapBehind[j]))
+                    
                     lapCheck = fastestLapCheck(lapTime, fastestLap)
                     #Checking if a driver set fastest lap; updates for fastest lap below
                     if lapCheck == True:
                         fastestLap = lapTime
                         driverSetFastestLap = j
                     pitThisLap[j] = toPitOrNotToPit(j, raceNumber, lapsRemaining)
+        time.sleep(0.25)
+        #Stopping the subroutine in order to let the viewer more easily see what is going on
+        screen.fill((105,105,105))
+        draw_text("Laps: " + str(i+1), bigFont, (255,255,255), screen, 700,50)
+        #Displaying lap count
+        for l in range (0,carsLeft):
+            if raceStandings[l] == "blank":
+                l = carsLeft
+            else:
+                nameAndTime = str(l+1) + ". " + driverName[int(raceStandings[l])]  +str(gapInFront[raceStandings[l]])
+            draw_text(nameAndTime, bigFont, (255,255,255), screen, 100, (80+(20*(l-1))))
+        
+
+            #Outputting the race standings
+
+        pygame.display.update()
+        mainClock.tick(60)
+        
         
         if safetyCar == True:
             safetyCarLapCounter = safetyCarLapCounter + 1
@@ -833,7 +866,14 @@ def race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCa
             if vscLapCounter > 2:
                 #Automatically ending VSC if laps completed is greater than 2
                 virtualSafetyCar = False
-                
+    if championshipMode == True:
+        allocatePoints(driverSetFastestLap)
+        raceNumber = raceNumber + 1
+    for a in range (0,20):
+        gapBehind[a] = 0.5
+        gapInFront[a] = 0.5
+    reset()
+
                 
     
 #MAIN BELOW 
@@ -841,7 +881,7 @@ def race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCa
 fastestLap = 2000
 driverSetFastestLap = 20
 total = 0
-raceNumber = 1
+raceNumber = 0
 if dryRaceYesNo == True:
     trackWater = 0
     rainLevel = 1
@@ -852,26 +892,463 @@ safetyCar = False
 virtualSafetyCar = False
 safetyCarLapCounter = 0
 vscLapCounter = 0
-qualifyingSession = False
-#Race simulation algorithm
-#if qualifyingSession == True:
-    #
-#else:
+championshipMode = True
 
-qualifying(raceNumber)
-for x in range(0,20):
-    if raceStandings[x] != "blank":
-        print(driverName[raceStandings[x]])
-race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCar, trackWater, rainLevel, dryRaceYesNo)
-for x in range(0,20):
-    if raceStandings[x] != "blank":
-        print(driverName[raceStandings[x]])
+#allocatePoints(driverSetFastestLap)
+#for y in range(0,20):
+#    print(driverName[y] + " " + str(championshipStandings[y]))
+#for z in range(0,10):
+ #   print(teamName[z] + " " + str(constructorsStandings[z]))
 
-allocatePoints(driverSetFastestLap)
-for y in range(0,20):
-    print(driverName[y] + " " + str(championshipStandings[y]))
-for z in range(0,10):
-    print(teamName[z] + " " + str(constructorsStandings[z]))
+def reset():
+    fastestLap = 2000
+    driverSetFastestLap = 20
+    tyreTimeLoss = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    stintLength = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    retirementArray = [False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False,False]
+    gapInFront = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+    gapBehind = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
 
 
 
+
+
+
+
+    
+    
+
+
+#UI
+
+
+
+mainClock = pygame.time.Clock()
+from pygame.locals import *
+pygame.init()
+pygame.display.set_caption("Formula 1 race simulator")
+screen = pygame.display.set_mode((1280,720),0,32)
+
+click = False
+
+bigFont = pygame.font.SysFont(None, 30)
+smallFont = pygame.font.SysFont(None, 25)
+
+userText = ""
+
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, 1, color)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x,y)
+    surface.blit(textobj, textrect)
+
+def main_menu(raceNumber, championshipMode):
+    click = False
+    while True:
+        #Background colour
+        screen.fill((105,105,105))
+        #Menu title
+        draw_text("Main Menu", bigFont, (255,255,255), screen, 590, 20)
+        #Detecting where the mouse is
+        mx, my = pygame.mouse.get_pos()
+
+        #Defining the buttons
+        button1 = pygame.Rect(480,100,300,100)
+        button2 = pygame.Rect(480,300,300,100)
+        button3 = pygame.Rect(480,500,300,100)
+
+        
+
+        #Drawing the buttons
+        pygame.draw.rect(screen, (255,0,0), button1)
+        pygame.draw.rect(screen, (255,0,0), button2)
+        pygame.draw.rect(screen, (255,0,0), button3)
+
+        #Displaying text on the buttons
+        draw_text("Race", bigFont, (255,255,255), screen, 590, 140)
+        draw_text("Customise", bigFont, (255,255,255), screen, 580, 340)
+        draw_text("Quit", bigFont, (255,255,255), screen, 590, 540)
+        click = False
+        
+        for event in pygame.event.get():
+            #Defining when to shut the program/register a click
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+        #Displaying changes in the UI
+        #Defining what happens if the buttons are clicked
+        if button1.collidepoint(mx,my):
+            if click:
+                simMenu(raceNumber, championshipMode)
+        if button2.collidepoint(mx,my):
+            if click:
+                customiseMenu()
+        if button3.collidepoint(mx,my):
+            if click:
+                pygame.quit()
+                sys.exit()
+        pygame.display.update()
+        mainClock.tick(60)
+
+def simMenu(raceNumber, championshipMode):
+    running = True
+    click = False
+    while running:
+        
+        mx, my = pygame.mouse.get_pos()
+        screen.fill((105,105,105))
+        button1 = pygame.Rect(480,100,300,100)
+        button2 = pygame.Rect(480,300,300,100)
+        
+        if button1.collidepoint(mx,my):
+            if click:
+                raceSelectMenu()
+        if button2.collidepoint(mx,my):
+            if click:
+                championshipMenu(championshipMode, raceNumber)
+        pygame.draw.rect(screen, (255,0,0), button1)
+        pygame.draw.rect(screen, (255,0,0), button2)
+        draw_text("Single Race", bigFont, (255,255,255), screen, 580, 140)
+        draw_text("Championship", bigFont, (255,255,255), screen, 580, 340)
+        draw_text("Select Mode", bigFont, (255,255,255), screen, 590,20)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+               if event.key == K_ESCAPE:
+                    running = False
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+
+
+def customiseMenu():
+    running = True
+    click = False
+    
+    while running:
+        mx, my = pygame.mouse.get_pos()
+        screen.fill((105,105,105))
+        draw_text("Customise", bigFont, (255,255,255), screen, 590, 20)
+        button1 = pygame.Rect(480,100,300,100)
+        button2 = pygame.Rect(480,300,300,100)
+        if button1.collidepoint(mx,my):
+                if click:
+                    setDriver()
+                    simMenu(raceNumber, championshipMode)
+        if button2.collidepoint(mx,my):
+                if click:
+                    setTrackWater(trackWater)
+                    setRainLevel(rainLevel)
+                    simMenu(championshipMode)
+        pygame.draw.rect(screen, (255,0,0), button1)
+        pygame.draw.rect(screen, (255,0,0), button2)
+        draw_text("Driver", bigFont, (255,255,255), screen, 590,140)
+        draw_text("Weather", bigFont, (255,255,255), screen, 590,340)
+        
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+               if event.key == K_ESCAPE:
+                    running = False
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        mainClock.tick(60)
+        
+
+
+def championshipMenu(championshipMode, raceNumber):
+    gapInFront = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+    gapBehind = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+    raceNumber = raceNumber + 1
+    reset()
+    running = True
+    click = False
+    championshipMode = True
+    while running:
+        mx, my = pygame.mouse.get_pos()
+        screen.fill((105,105,105))
+        draw_text("Championship Mode!", bigFont, (255,255,255), screen, 540, 20)
+        for l in range (0,20):
+            nameAndPoints = str(l+1) + ". " + driverName[l] + " " + str(championshipStandings[l])
+            draw_text(nameAndPoints, bigFont, (255,255,255), screen, 100, (80+(20*(l-1))))
+        for m in range (0,10):
+            nameAndPoints = str(m+1) + ". " + teamName[m] + " " + str(constructorsStandings[m])
+            draw_text(nameAndPoints, bigFont, (255,255,255), screen, 1000, (80+(20*(m-1))))
+        button1 = pygame.Rect(480,100,300,100)
+
+        if button1.collidepoint(mx,my):
+                if click:
+                    raceScreen(championshipMode)
+        pygame.draw.rect(screen, (255,0,0), button1)
+        draw_text("Next Race", bigFont, (255,255,255), screen, 590,140)       
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+               if event.key == K_ESCAPE:
+                    running = False
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+def raceSelectMenu():
+    running = True
+    click = False
+    
+    while running:
+        mx, my = pygame.mouse.get_pos()
+        screen.fill((105,105,105))
+        #Title of menu
+        draw_text("Select Race", bigFont, (255,255,255), screen, 590, 20)
+        #Defining the positions of the buttons
+        button1 = pygame.Rect(50,100,200,50)
+        button2 = pygame.Rect(300,100,200,50)
+        button3 = pygame.Rect(550,100,200,50)
+        button4 = pygame.Rect(800,100,200,50)
+        button5 = pygame.Rect(1050,100,200,50)
+        button6 = pygame.Rect(50,200,200,50)
+        button7 = pygame.Rect(300,200,200,50)
+        button8 = pygame.Rect(550,200,200,50)
+        button9 = pygame.Rect(800,200,200,50)
+        button10 = pygame.Rect(1050,200,200,50)
+        button11 = pygame.Rect(50,300,200,50)
+        button12 = pygame.Rect(300,300,200,50)
+        button13 = pygame.Rect(550,300,200,50)
+        button14 = pygame.Rect(800,300,200,50)
+        button15 = pygame.Rect(1050,300,200,50)
+        button16 = pygame.Rect(50,400,200,50)
+        button17 = pygame.Rect(300,400,200,50)
+        button18 = pygame.Rect(550,400,200,50)
+        button19 = pygame.Rect(800,400,200,50)
+        button20 = pygame.Rect(1050,400,200,50)
+        button21 = pygame.Rect(400,500,200,50)
+        button22 = pygame.Rect(700,500,200,50)
+        
+        #Displaying the buttons
+        pygame.draw.rect(screen, (255,0,0), button1)
+        pygame.draw.rect(screen, (255,0,0), button2)
+        pygame.draw.rect(screen, (255,0,0), button3)
+        pygame.draw.rect(screen, (255,0,0), button4)
+        pygame.draw.rect(screen, (255,0,0), button5)
+        pygame.draw.rect(screen, (255,0,0), button6)
+        pygame.draw.rect(screen, (255,0,0), button7)
+        pygame.draw.rect(screen, (255,0,0), button8)
+        pygame.draw.rect(screen, (255,0,0), button9)
+        pygame.draw.rect(screen, (255,0,0), button10)
+        pygame.draw.rect(screen, (255,0,0), button11)
+        pygame.draw.rect(screen, (255,0,0), button12)
+        pygame.draw.rect(screen, (255,0,0), button13)
+        pygame.draw.rect(screen, (255,0,0), button14)
+        pygame.draw.rect(screen, (255,0,0), button15)
+        pygame.draw.rect(screen, (255,0,0), button16)
+        pygame.draw.rect(screen, (255,0,0), button17)
+        pygame.draw.rect(screen, (255,0,0), button18)
+        pygame.draw.rect(screen, (255,0,0), button19)
+        pygame.draw.rect(screen, (255,0,0), button20)
+        pygame.draw.rect(screen, (255,0,0), button21)
+        pygame.draw.rect(screen, (255,0,0), button22)
+        
+
+        draw_text("Bahrain", smallFont, (255,255,255), screen, 113, 117)
+        draw_text("Saudi Arabia", smallFont, (255,255,255), screen, 343, 117)
+        draw_text("Australia", smallFont, (255,255,255), screen, 608, 117)
+        draw_text("Emilia Romagna", smallFont, (255,255,255), screen, 833, 117)
+        draw_text("Miami", smallFont, (255,255,255), screen, 1123, 117)
+        draw_text("Spain", smallFont, (255,255,255), screen, 123, 217)
+        draw_text("Monaco", smallFont, (255,255,255), screen, 363, 217)
+        draw_text("Azerbaijan", smallFont, (255,255,255), screen, 608, 217)
+        draw_text("Canada", smallFont, (255,255,255), screen, 863, 217)
+        draw_text("Britain", smallFont, (255,255,255), screen, 1113, 217)
+        draw_text("Austria", smallFont, (255,255,255), screen, 113, 317)
+        draw_text("France", smallFont, (255,255,255), screen, 373, 317)
+        draw_text("Hungary", smallFont, (255,255,255), screen, 613, 317)
+        draw_text("Belgium", smallFont, (255,255,255), screen, 863, 317)
+        draw_text("Netherlands", smallFont, (255,255,255), screen, 1103, 317)
+        draw_text("Italy", smallFont, (255,255,255), screen, 123, 417)
+        draw_text("Singapore", smallFont, (255,255,255), screen, 363, 417)
+        draw_text("Japan", smallFont, (255,255,255), screen, 618, 417)
+        draw_text("USA", smallFont, (255,255,255), screen, 873, 417)
+        draw_text("Mexico", smallFont, (255,255,255), screen, 1113, 417)
+        draw_text("Brazil", smallFont, (255,255,255), screen, 473, 517)
+        draw_text("Abu Dhabi", smallFont, (255,255,255), screen, 753, 517)
+
+        if button1.collidepoint(mx,my):
+                if click:
+                    raceScreen(0) 
+        if button2.collidepoint(mx,my):
+                if click:
+                    raceScreen(1)
+        if button3.collidepoint(mx,my):
+                if click:
+                    raceScreen(2)
+        if button4.collidepoint(mx,my):
+                if click:
+                    raceScreen(3)
+        if button5.collidepoint(mx,my):
+                if click:
+                    raceScreen(4)
+        if button6.collidepoint(mx,my):
+                if click:
+                    raceScreen(5)
+        if button7.collidepoint(mx,my):
+                if click:
+                    raceScreen(6)
+        if button8.collidepoint(mx,my):
+                if click:
+                    raceScreen(7)
+        if button9.collidepoint(mx,my):
+                if click:
+                    raceScreen(8)
+        if button10.collidepoint(mx,my):
+                if click:
+                    raceScreen(9)
+        if button11.collidepoint(mx,my):
+                if click:
+                    raceScreen(10)
+        if button12.collidepoint(mx,my):
+                if click:
+                    raceScreen(11)
+        if button13.collidepoint(mx,my):
+                if click:
+                    raceScreen(12)
+        if button14.collidepoint(mx,my):
+                if click:
+                    raceScreen(13)
+        if button15.collidepoint(mx,my):
+                if click:
+                    raceScreen(14)
+        if button16.collidepoint(mx,my):
+                if click:
+                    raceScreen(15)
+        if button17.collidepoint(mx,my):
+                if click:
+                    raceScreen(16)
+        if button18.collidepoint(mx,my):
+                if click:
+                    raceScreen(17)
+        if button19.collidepoint(mx,my):
+                if click:
+                    raceScreen(18)
+        if button20.collidepoint(mx,my):
+                if click:
+                    raceScreen(19)
+        if button21.collidepoint(mx,my):
+                if click:
+                    raceScreen(20)
+        if button22.collidepoint(mx,my):
+                if click:
+                    raceScreen(21)
+        
+
+        
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+               if event.key == K_ESCAPE:
+                    running = False
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+        pygame.display.update()
+        mainClock.tick(60)
+
+def raceScreen(raceNumber):
+    screen.fill((105,105,105))
+    running = True
+    click = False
+    qualifying(raceNumber)
+    draw_text("Standings:", bigFont, (255,255,255), screen, 100, 40)
+    for i in range (0,20):
+        if raceStandings[i] != "blank":
+            nameAndTime = str(i+1) + ". " + driverName[raceStandings[i]] + str(orderedQualifying[i]) 
+            draw_text(nameAndTime, bigFont, (255,255,255), screen, 100, (80+(20*(i-1))))
+
+    while running:  
+        mx, my = pygame.mouse.get_pos()
+        
+        button1 = pygame.Rect(480,100,300,100)
+        pygame.draw.rect(screen, (255,0,0), button1)
+        draw_text("Sim Race", bigFont, (255,255,255), screen, 580, 140)
+        if button1.collidepoint(mx,my):
+                if click:
+                    interRaceScreen(raceNumber)
+                    
+        
+        for event in pygame.event.get():
+
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+               if event.key == K_ESCAPE:
+                    running = False
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        mainClock.tick(60)
+    
+def interRaceScreen(raceNumber):
+    screen.fill((105,105,105))
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+
+            sys.exit()
+    trueRaceScreen(raceNumber, championshipMode)
+    pygame.display.update()
+    mainClock.tick(60)
+
+def trueRaceScreen(raceNumber, championshipMode):
+    screen.fill((105,105,105))
+    running = True
+    click = False
+    draw_text("Standings:", bigFont, (255,255,255), screen, 100, 40)
+    race(raceNumber, fastestLap, driverSetFastestLap, safetyCar, virtualSafetyCar, trackWater, rainLevel, dryRaceYesNo, championshipMode)
+    while running:
+        for event in pygame.event.get():
+
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+               if event.key == K_ESCAPE:
+                   if championshipMode == True:
+                       raceNumber = raceNumber + 1
+                       championshipMenu(championshipMode, raceNumber)
+                       
+                   else:
+                        main_menu()
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+
+        pygame.display.update()
+        mainClock.tick(60)
+
+main_menu(raceNumber, championshipMode)
